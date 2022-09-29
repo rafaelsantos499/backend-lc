@@ -23,11 +23,35 @@ class AuthController extends Controller
           
     }
 
-    public function store(Request $request){
-       $novoUsuario = User::create($request->all());
-       dd($novoUsuario);
-         
-        return 'cheguei';
+ 
+
+    public function store(Request $request){     
+
+    $regras = [
+        "name" => 'required',
+        "email" => 'required|unique:users',
+        "password"=> 'required'
+    ];
+
+    $feedback = [
+        'required' => 'O campo :attribute é obrigatório',
+        'email.unique' => 'esse email já existe'
+        
+    ];
+
+    $request->validate($regras, $feedback);
+
+
+    $dateUsuario = [
+        "name" => $request->input('name') , 
+        "email" => $request->input('email') ,
+        "password" => bcrypt($request->input('password')),
+    ] ; 
+
+      $usuario =   User::create($dateUsuario) ; 
+
+      return response()->json($usuario, 200);
+    
     }
 
     public function logout(){

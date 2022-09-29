@@ -31,9 +31,7 @@ Route::prefix('v1')->middleware('jwt.auth')->group(function(){
 });
 
 
-Route::prefix('v1')->group(function(){
-    Route::apiResource('CriarNovoUsuario','AuthController' );
-});
 
+Route::apiResource('novousuario','AuthController' );
 Route::post('login', 'AuthController@login');
 
