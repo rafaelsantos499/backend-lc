@@ -34,4 +34,6 @@ Route::prefix('v1')->middleware('jwt.auth')->group(function(){
 
 Route::apiResource('novousuario','AuthController' );
 Route::post('login', 'AuthController@login');
+Route::post('password/email', 'AuthController@forgotPassword');
+Route::post('password/reset', 'AuthController@reset');
 
