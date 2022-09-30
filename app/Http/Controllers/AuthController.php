@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
+use App\Models\PasswordReset;
 use App\Models\User;
-use App\Http\Requests\AuthForgotPasswordRequest;
 use Illuminate\Support\Str;
 use App\Events\ForgotPasswordRequest;
 use Illuminate\Support\Facades\Password;
-use App\Models\PasswordReset;
 use App\Events\ForgotPassword;
+use App\Http\Requests\AuthForgotPasswordRequest;
+
 class AuthController extends Controller
 {
 
@@ -33,23 +34,38 @@ class AuthController extends Controller
         
     }
 
-    public function reset() {
-        $credentials = request()->validate([
-            'email' => 'required|email',
-            'token' => 'required|string',
-            'password' => 'required|string'
-        ]);
+    public function reset(AuthForgotPasswordRequest $request) {
 
-        $reset_password_status = Password::reset($credentials, function ($user, $password) {
-            $user->password = bcrypt($password);
-            $user->save();
-        });
+      
+        $input = $request->validated();
+        $email = $input['email'];
+        $password = $input['password'];
+        $token = $input['token'];
+        // dd($email,$password,$token);
 
-        if ($reset_password_status == Password::INVALID_TOKEN) {
-            return response()->json(["msg" => "Invalid token provided"], 400);
+        $passReset = PasswordReset::where('email',$email)->where('token'->$token)-first();
+
+        if(empty($passReset)){
+
         }
 
-        return response()->json(["msg" => "Password has been successfully changed"]);
+
+        // $credentials = request()->validate([
+        //     'email' => 'required|email',
+        //     'token' => 'required|string',
+        //     'password' => 'required|string'
+        // ]);
+
+        // $reset_password_status = Password::reset($credentials, function ($user, $password) {
+        //     $user->password = bcrypt($password);
+        //     $user->save();
+        // });
+
+        // if ($reset_password_status == Password::INVALID_TOKEN) {
+        //     return response()->json(["msg" => "Invalid token provided"], 400);
+        // }
+
+        // return response()->json(["msg" => "Password has been successfully changed"]);
     }
 
     public function login(Request $request){
