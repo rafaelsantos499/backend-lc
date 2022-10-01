@@ -9,6 +9,8 @@ use App\Events\ForgotPasswordRequest;
 use Illuminate\Support\Facades\Password;
 use App\Events\ForgotPassword;
 use App\Http\Requests\AuthForgotPasswordRequest;
+use App\Exceptions\ResetPasswordTokenInvalidException;
+
 
 class AuthController extends Controller
 {
@@ -43,12 +45,21 @@ class AuthController extends Controller
         $token = $input['token'];
         // dd($email,$password,$token);
 
-        $passReset = PasswordReset::where('email',$email)->where('token'->$token)-first();
+        $passReset = PasswordReset::where('email',$email)->where('token' , $token)->first();
 
         if(empty($passReset)){
-
+              throw new ResetPasswordTokenInvalidException();              
         }
 
+        $user = User::where('email' , $email)->firstOrFail();
+        $user->password = bcrypt($password);
+        $user->save();
+
+
+        PasswordReset::where('email', $email)->delete();
+
+
+        return '';
 
         // $credentials = request()->validate([
         //     'email' => 'required|email',
