@@ -14,11 +14,14 @@ use App\Events\ForgotPassword;
 
 use App\Http\Requests\AuthForgotPasswordRequest;
 use App\Http\Requests\AuthLoginRequest;
+use App\Http\Requests\AuthRegisterRequest;
+
 
 //mesagens de error
 
 use App\Exceptions\ResetPasswordTokenInvalidException;
 use App\Exceptions\LoginInvalidException;
+use App\Exceptions\UsuarioJaExiste;
 
 // Resources
 
@@ -132,32 +135,58 @@ class AuthController extends Controller
 
  
 
-    public function store(Request $request){     
-
-    $regras = [
-        "name" => 'required',
-        "email" => 'required|unique:users',
-        "password"=> 'required'
-    ];
-
-    $feedback = [
-        'required' => 'O campo :attribute é obrigatório',
-        'email.unique' => 'esse email já existe'
-        
-    ];
-
-    $request->validate($regras, $feedback);
+    public function novoUsuario(AuthRegisterRequest $request){     
 
 
-    $dateUsuario = [
-        "name" => $request->input('name') , 
-        "email" => $request->input('email') ,
-        "password" => bcrypt($request->input('password')),
+        $input =  $request->validated();
+        $name = $input['name'];
+        $email = $input['email'];
+        $password = $input['password'];
+
+        $user = User::where('email', $email)->exists();
+
+       if($user){
+         throw new UsuarioJaExiste();
+       };
+
+
+       $dateUsuario = [
+        "name" => $name  , 
+        "email" => $email ,
+        "password" => bcrypt($password),
     ] ; 
+       
+       $user = User::create( $dateUsuario);
+      
 
-      $usuario =   User::create($dateUsuario) ; 
+     return $user;
 
-      return response()->json($usuario, 200);
+       
+
+    // $regras = [
+    //     "name" => 'required',
+    //     "email" => 'required|unique:users',
+    //     "password"=> 'required'
+    // ];
+
+    // $feedback = [
+    //     'required' => 'O campo :attribute é obrigatório',
+    //     'email.unique' => 'esse email já existe'
+        
+    // ];
+
+    // $request->validate($regras, $feedback);
+
+
+    // $dateUsuario = [
+    //     "name" => $request->input('name') , 
+    //     "email" => $request->input('email') ,
+    //     "password" => bcrypt($request->input('password')),
+    // ] ; 
+
+    //   $usuario =   User::create($dateUsuario) ; 
+
+    //   return response()->json($usuario, 200);
     
     }
 
