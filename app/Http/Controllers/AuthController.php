@@ -8,8 +8,21 @@ use Illuminate\Support\Str;
 use App\Events\ForgotPasswordRequest;
 use Illuminate\Support\Facades\Password;
 use App\Events\ForgotPassword;
+
+
+   //request
+
 use App\Http\Requests\AuthForgotPasswordRequest;
+use App\Http\Requests\AuthLoginRequest;
+
+//mesagens de error
+
 use App\Exceptions\ResetPasswordTokenInvalidException;
+use App\Exceptions\LoginInvalidException;
+
+// Resources
+
+use App\Http\Resources\UserResource;
 
 
 class AuthController extends Controller
@@ -79,16 +92,41 @@ class AuthController extends Controller
         // return response()->json(["msg" => "Password has been successfully changed"]);
     }
 
-    public function login(Request $request){
-        $credenciais = $request->all(['email', 'password']);
-        //autenticação (email, password)
-         $token =  auth('api')->attempt($credenciais);
-        //retorna um token
-        if($token){
-             return response()->json(['token' => $token]);
-        }else {
-            return response()->json(['erro' => 'Usuário ou senha inválida'], 403);
-        }      
+    public function login(AuthLoginRequest $request){
+
+        $input = $request->validated();
+        $email = $input['email'];
+       
+        $login = [
+            'email' => $input['email'],
+            'password' => $input['password'],
+        ];
+
+        // dd(auth('api')->attempt($login));
+
+        
+        if(!$token = auth('api')->attempt($login)){
+           throw new LoginInvalidException();
+        };
+
+        $dateToken =  [
+            'token' => $token,
+            'token_type' => 'Bearer'
+        ];  
+
+
+        return (new UserResource(User::where('email' , $email)->firstOrFail()))->additional($dateToken);
+
+        // return   new UserResource(auth()->user());
+        // $credenciais = $request->all(['email', 'password']);
+        // //autenticação (email, password)
+        //  $token =  auth('api')->attempt($credenciais);
+        // //retorna um token
+        // if($token){
+        //      return response()->json(['token' => $token]);
+        // }else {
+        //     return response()->json(['erro' => 'Usuário ou senha inválida'], 403);
+        // }      
           
     }
 

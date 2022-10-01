@@ -6,14 +6,13 @@ use Exception;
 
 class ResetPasswordTokenInvalidException extends Exception
 {
-    protected $message = 'Token Invalid.';
+    protected $message = 'Token Invalido';
 
-    public function reder(){
-
-        return response()->json([
+    public function render(){
+        
+      return response()->json([
           'error' => class_basename($this),
           'message' => $this->getMessage(),
-        ],400);
-        
-    }
+      ],401);
+  }
 }
