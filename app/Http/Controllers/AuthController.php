@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use App\Events\ForgotPasswordRequest;
 use Illuminate\Support\Facades\Password;
-use App\Events\ForgotPassword;
 
 
    //request
@@ -26,6 +25,12 @@ use App\Exceptions\UsuarioJaExiste;
 // Resources
 
 use App\Http\Resources\UserResource;
+
+// Events
+
+use App\Events\ForgotPassword;
+use App\Events\UserRegistered;
+
 
 
 class AuthController extends Controller
@@ -157,6 +162,8 @@ class AuthController extends Controller
     ] ; 
        
        $user = User::create( $dateUsuario);
+
+       event(new UserRegistered($user));
       
 
      return $user;
