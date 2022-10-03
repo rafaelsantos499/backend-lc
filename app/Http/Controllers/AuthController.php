@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use App\Events\ForgotPasswordRequest;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Auth;
 
 
    //request
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Password;
 use App\Http\Requests\AuthForgotPasswordRequest;
 use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\AuthRegisterRequest;
+use App\Http\Requests\AuthVerifyEmailRequest;
+use App\Http\Requests\AlterarSenhaRequest;
 
 
 //mesagens de error
@@ -21,6 +24,10 @@ use App\Http\Requests\AuthRegisterRequest;
 use App\Exceptions\ResetPasswordTokenInvalidException;
 use App\Exceptions\LoginInvalidException;
 use App\Exceptions\UsuarioJaExiste;
+use App\Exceptions\VerifyEmailTokenInvalid;
+use App\Exceptions\EmailNaoVerificado;
+
+
 
 // Resources
 
@@ -56,6 +63,8 @@ class AuthController extends Controller
         event(new ForgotPassword($user, $token) );
         
     }
+
+   
 
     public function reset(AuthForgotPasswordRequest $request) {
 
@@ -117,11 +126,19 @@ class AuthController extends Controller
            throw new LoginInvalidException();
         };
 
+        if(User::where('email' , $email)->firstOrFail()->email_verified_at === null){
+           
+            throw new  EmailNaoVerificado();
+            
+        }       
+    
+   
         $dateToken =  [
             'token' => $token,
             'token_type' => 'Bearer'
         ];  
 
+      
 
         return (new UserResource(User::where('email' , $email)->firstOrFail()))->additional($dateToken);
 
@@ -138,7 +155,11 @@ class AuthController extends Controller
           
     }
 
- 
+
+
+ public function teste()      {
+    dd('ad', Auth::user());
+ }
 
     public function novoUsuario(AuthRegisterRequest $request){     
 
@@ -159,14 +180,15 @@ class AuthController extends Controller
         "name" => $name  , 
         "email" => $email ,
         "password" => bcrypt($password),
+        'confimation_token' => Str::random(60),
     ] ; 
        
-       $user = User::create( $dateUsuario);
+       $user = User::create($dateUsuario);
 
        event(new UserRegistered($user));
       
 
-     return $user;
+      return new UserResource($user);
 
        
 
@@ -194,6 +216,28 @@ class AuthController extends Controller
     //   $usuario =   User::create($dateUsuario) ; 
 
     //   return response()->json($usuario, 200);
+    
+    }
+
+    public function verificarEmail(AuthVerifyEmailRequest $request){
+        
+        $input = $request->validated();
+        $token = $input['token'];
+
+
+        $user = User::where('confimation_token', $token)->first();
+
+        if(empty($user)){
+            //se esse cara estiver vazio
+
+             throw new VerifyEmailTokenInvalid();
+        }
+
+        $user->confimation_token = null;
+        $user->email_verified_at = now();
+        $user->save();
+        
+        return new UserResource($user);
     
     }
 

@@ -18,8 +18,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('v1')->middleware('jwt.auth')->group(function(){
-    Route::post('me', 'AuthController@me');
+Route::prefix('v1')->middleware('auth:api')->group(function(){
+    Route::prefix('me',)->group(function(){
+        Route::get('', 'MeController@index');
+        Route::post('alterar-senha', 'MeController@update');
+    });
+    
+    Route::post('alterar', 'AuthController@update');
+
+
     Route::post('refresh', 'AuthController@refresh');
     Route::post('logout', 'AuthController@logout');
     Route::apiResource('client', 'ClientController');
@@ -27,8 +34,13 @@ Route::prefix('v1')->middleware('jwt.auth')->group(function(){
     Route::apiResource('locacao', 'LocacaoController');
     Route::apiResource('marca', 'MarcaController');
     Route::apiResource('modelo', 'ModeloController');
+
+   
+  
     
 });
+
+
 
 
 
@@ -36,4 +48,11 @@ Route::post('novo-usuario','AuthController@novoUsuario' );
 Route::post('login', 'AuthController@login');
 Route::post('password/email', 'AuthController@forgotPassword');
 Route::post('password/reset', 'AuthController@reset');
+Route::post('verificar-email', 'AuthController@verificarEmail');
+
+
+
+
+
+
 
