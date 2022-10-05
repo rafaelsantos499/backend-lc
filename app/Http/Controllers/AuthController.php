@@ -126,11 +126,11 @@ class AuthController extends Controller
            throw new LoginInvalidException();
         };
 
-        if(User::where('email' , $email)->firstOrFail()->email_verified_at === null){
+        // if(User::where('email' , $email)->firstOrFail()->email_verified_at === null){
            
-            throw new  EmailNaoVerificado();
+        //     throw new  EmailNaoVerificado();
             
-        }       
+        // }       
     
    
         $dateToken =  [
@@ -155,11 +155,6 @@ class AuthController extends Controller
           
     }
 
-
-
- public function teste()      {
-    dd('ad', Auth::user());
- }
 
     public function novoUsuario(AuthRegisterRequest $request){     
 
